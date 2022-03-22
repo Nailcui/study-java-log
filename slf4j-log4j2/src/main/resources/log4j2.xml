@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，你会看到log4j2内部各种详细输出。
+-->
+<!--
+	monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身，设置间隔秒数。
+-->
+<Configuration monitorInterval="30" schema="Log4J-config.xsd" status="INFO" strict="true">
+
+  <Properties>
+    <Property name="log.home">/logs/slf4j-log4j2</Property>
+    <Property name="layout.pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n
+    </Property>
+    <Property name="metric.pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n</Property>
+  </Properties>
+
+  <Appenders>
+
+
+    <RollingRandomAccessFile fileName="${log.home}/info.log"
+      filePattern="${log.home}/info.log.%d{yyyy-MM-dd}.%i"
+      name="info">
+      <PatternLayout pattern="${layout.pattern}"/>
+      <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="1000MB"/>
+      </Policies>
+      <DefaultRolloverStrategy max="50">
+        <Delete basePath="${log.home}" maxDepth="1">
+          <IfFileName glob="info.log*"/>
+          <IfLastModified age="3d"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingRandomAccessFile>
+
+    <RollingRandomAccessFile fileName="${log.home}/error.log"
+      filePattern="${log.home}/error.log.%d{yyyy-MM-dd}-%i"
+      name="error">
+      <PatternLayout pattern="${layout.pattern}"/>
+      <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="1000MB"/>
+      </Policies>
+      <DefaultRolloverStrategy>
+        <Delete basePath="${log.home}" maxDepth="1">
+          <IfFileName glob="error.log*"/>
+          <IfLastModified age="2d"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingRandomAccessFile>
+
+    <RollingRandomAccessFile fileName="${log.home}/warn.log"
+      filePattern="${log.home}/warn.log.%d{yyyy-MM-dd}-%i"
+      name="warn">
+      <PatternLayout pattern="${layout.pattern}"/>
+      <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+      <Policies>
+        <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+        <SizeBasedTriggeringPolicy size="1000MB"/>
+      </Policies>
+      <DefaultRolloverStrategy>
+        <Delete basePath="${log.home}" maxDepth="1">
+          <IfFileName glob="warn.log*"/>
+          <IfLastModified age="2d"/>
+        </Delete>
+      </DefaultRolloverStrategy>
+    </RollingRandomAccessFile>
+
+
+  </Appenders>
+  <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+  <Loggers>
+
+
+    <AsyncLogger name="warn" level="WARN" additivity="false">
+      <appender-ref ref="warn"/>
+    </AsyncLogger>
+    <AsyncLogger name="error" level="ERROR" additivity="false">
+      <appender-ref ref="error"/>
+    </AsyncLogger>
+
+    <Root level="INFO">
+      <appender-ref ref="info"/>
+    </Root>
+  </Loggers>
+</Configuration>
